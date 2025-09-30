@@ -1,0 +1,5 @@
+package io.manager.policy.api.dto.enums;
+
+public enum SalesChannel {
+    MOBILE, WHATSAPP, WEB_SITE, CALL_CENTER
+}
