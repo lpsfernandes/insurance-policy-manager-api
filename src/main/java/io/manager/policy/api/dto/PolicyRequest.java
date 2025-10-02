@@ -9,7 +9,7 @@ import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.List;
 
-public record PolicyRequestRecord(
+public record PolicyRequest(
         @NotNull @NotBlank String clientId,
         @NotNull Long productId,
         @NotNull Category category,
