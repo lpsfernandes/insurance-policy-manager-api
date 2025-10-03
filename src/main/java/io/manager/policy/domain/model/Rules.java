@@ -11,17 +11,21 @@ import lombok.NoArgsConstructor;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "tb_assistances")
-public class Assistances {
+@Table(name = "tb_rules")
+public class Rules {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "policy_id", nullable = false)
-    String policyId;
+    @Column
+    String category;
 
-    @Column(nullable = false)
-    String assistance;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "risk_classification", nullable = false)
+    RiskClassification riskClassification;
+
+    @Column(name = "insured_amount_limit", nullable = false)
+    Long insuredAmountLimit;
 
 }

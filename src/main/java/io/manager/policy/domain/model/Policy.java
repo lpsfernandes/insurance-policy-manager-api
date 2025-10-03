@@ -1,26 +1,30 @@
 package io.manager.policy.domain.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.Set;
 
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "tb_policies")
 public class Policy {
 
     @Id
+    @Column(name = "id", unique = true, nullable = false)
     private String id;
 
     @Column(name = "client_id", nullable = false)
     String clientId;
 
-    @Column(name = "product_id", unique = true, nullable = false)
+    @Column(name = "product_id", nullable = false)
     Long productId;
 
     @Column(name = "category", length = 50, nullable = false)
@@ -33,31 +37,35 @@ public class Policy {
     String paymentMethod;
 
     @Column(name = "insured_amount", nullable = false)
-    BigDecimal insuredAmount;
+    Long insuredAmount;
 
     @Column(name = "monthly_premium", nullable = false)
-    BigDecimal monthlyPremium;
+    Long monthlyPremium;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "risk_classification")
+    RiskClassification riskClassification;
 
     @Column(name = "created_at", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     ZonedDateTime createdAt;
 
-    @Column(name = "finished_at", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    @Column(name = "finished_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     ZonedDateTime finishedAt;
+
+    @Column(name = "max_processing_time")
+    ZonedDateTime maxProcessingTime;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     Status status;
 
-    @OneToMany
-    @JoinColumn(name = "policy_id", referencedColumnName = "policy_id", insertable = false, updatable = false)
+    @OneToMany(mappedBy = "policyId", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     Set<StatusHistory> history;
 
-    @OneToMany
-    @JoinColumn(name = "policy_id", referencedColumnName = "policy_id", insertable = false, updatable = false)
+    @OneToMany(mappedBy = "policyId", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     Set<Coverage> coverages;
 
-    @OneToMany
-    @JoinColumn(name = "policy_id", referencedColumnName = "policy_id", insertable = false, updatable = false)
+    @OneToMany(mappedBy = "policyId", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     Set<Assistances> assistances;
 
 }

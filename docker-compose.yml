@@ -1,23 +1,82 @@
-version: '3'
+version: '3.8'
+
 services:
-  postgres:
-    image: "postgres"
+
+  mockserver:
+    image: mockserver/mockserver:latest
+    container_name: mockserver
+    ports:
+      - "1080:1080"
     environment:
-      - POSTGRES_USER=root
-      - POSTGRES_PASSWORD=root
-      - POSTGRES_DB=root      
+      MOCKSERVER_INITIALIZATION_JSON_PATH: /config/init.json
+    volumes:
+      - ./mockserver-config:/config
+    networks:
+      - app-net
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    volumes:
+      - zookeeper-data:/var/lib/zookeeper
+    networks:
+      - app-net
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_CREATE_TOPICS: "topico-pagamentos:1:1,topico-subscricao:3:1,topico-eventos:2:1"
+    volumes:
+      - kafka-data:/var/lib/kafka
+    depends_on:
+      - zookeeper
+    networks:
+      - app-net
+
+  postgres:
+    image: postgres:15
+    container_name: postgres
     ports:
       - "5432:5432"
-    volumes:
-      - ./migration/docker-database-initial.sql:/docker-entrypoint-initdb.d/docker-database-initial.sql   
-
-  pgadmin-compose:
-    image: dpage/pgadmin4
     environment:
-      PGADMIN_DEFAULT_EMAIL: "gui@alura.com"
-      PGADMIN_DEFAULT_PASSWORD: "123456"
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: appdb
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - app-net
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin
     ports:
-      - "54321:80"
+      - "5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
     depends_on:
       - postgres
+    networks:
+      - app-net
 
+volumes:
+  pgdata:
+  kafka-data:
+  zookeeper-data:
+
+networks:
+  app-net:
+    driver: bridge

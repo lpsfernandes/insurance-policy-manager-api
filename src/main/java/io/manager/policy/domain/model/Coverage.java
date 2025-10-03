@@ -1,16 +1,22 @@
 package io.manager.policy.domain.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
-
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Data
 @Entity
 @Table(name = "tb_coverage")
 public class Coverage {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(name = "policy_id", nullable = false)
     String policyId;
@@ -19,6 +25,6 @@ public class Coverage {
     String typeCoverage;
 
     @Column(name = "insured_amount", nullable = false)
-    BigDecimal insuredAmount;
+    Long insuredAmount;
 
 }
