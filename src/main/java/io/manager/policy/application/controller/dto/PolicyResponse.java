@@ -4,6 +4,8 @@ import io.manager.policy.application.controller.dto.enums.Category;
 import io.manager.policy.application.controller.dto.enums.PaymentMethod;
 import io.manager.policy.application.controller.dto.enums.SalesChannel;
 import io.manager.policy.domain.model.*;
+import io.manager.policy.domain.model.enums.RiskClassification;
+import io.manager.policy.domain.model.enums.Status;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;

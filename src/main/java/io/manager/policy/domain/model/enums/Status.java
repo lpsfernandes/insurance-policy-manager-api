@@ -1,4 +1,4 @@
-package io.manager.policy.domain.model;
+package io.manager.policy.domain.model.enums;
 
 public enum Status {
     RECEIVED,

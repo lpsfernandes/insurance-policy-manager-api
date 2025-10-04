@@ -6,7 +6,7 @@ import io.manager.policy.boundaries.driving.http.dto.RiskAnalysisResponse;
 import io.manager.policy.domain.model.Occurrences;
 import io.manager.policy.domain.model.Policy;
 import io.manager.policy.domain.model.RiskAnalysis;
-import io.manager.policy.domain.model.RiskClassification;
+import io.manager.policy.domain.model.enums.RiskClassification;
 import io.manager.policy.domain.repository.OccurrencesRepository;
 import io.manager.policy.domain.repository.RiskAnalysisRepository;
 import lombok.RequiredArgsConstructor;

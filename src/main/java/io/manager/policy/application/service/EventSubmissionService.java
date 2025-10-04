@@ -1,8 +1,5 @@
 package io.manager.policy.application.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.manager.policy.application.scheduler.dto.Event;
-import io.manager.policy.application.scheduler.dto.Header;
 import io.manager.policy.boundaries.driven.producer.KafkaProducer;
 import io.manager.policy.domain.model.OutboxEvent;
 import io.manager.policy.domain.repository.OutboxEventRepository;
@@ -24,39 +21,47 @@ public class EventSubmissionService implements IEventSubmissionService{
 
     private final Duration expired;
     private final OutboxEventRepository outboxEventRepository;
-    private final ISearchPolicyService searchPolicyService;
     private final KafkaProducer kafkaProducer;
-    private final ObjectMapper objectMapper;
 
-    public EventSubmissionService(@Value("${scheduler.send-event.maxTime:PT24H}") Duration expired,
+    public EventSubmissionService(@Value("${scheduler.send-event.maxTime:PT1M}") Duration expired,
                                   OutboxEventRepository outboxEventRepository,
-                                  ISearchPolicyService searchPolicyService,
-                                  KafkaProducer kafkaProducer,
-                                  ObjectMapper objectMapper) {
+                                  KafkaProducer kafkaProducer) {
         this.outboxEventRepository = outboxEventRepository;
-        this.searchPolicyService = searchPolicyService;
         this.kafkaProducer = kafkaProducer;
-        this.objectMapper = objectMapper;
         this.expired = expired;
     }
 
     @Override
     public void sendEvent() {
-
-        this.deleteExpiredEvents();
-
         var pageable = PageRequest.of(0, 1000, Sort.Direction.ASC, "createdAt");
-        var pendingEvents = this.outboxEventRepository.findAll(pageable).getContent();
-        log.debug("Bloco de evento para envio: {}", pendingEvents.size());
-        for (var event : pendingEvents){
+
+        var eventsPendingProcessing = this.outboxEventRepository
+                .findByEventsPendingProcessing(ZonedDateTime.now(ZoneId.of("UTC")),pageable);
+
+        log.debug("Bloco de evento para envio: {}", eventsPendingProcessing.size());
+        for (var event : eventsPendingProcessing){
+            this.init(event);
             this.sendEvent(event);
         }
 
     }
 
-    void deleteExpiredEvents(){
-        int expired = this.outboxEventRepository.deleteByCreatedAtBefore(ZonedDateTime.now(ZoneId.of("UTC")).minusHours(this.expired.toHours()));
-        log.debug("Eventos expirados: {}", expired);
+    void init(OutboxEvent event){
+        event.setMaxProcessingTime(ZonedDateTime.now(ZoneId.of("UTC")).plusMinutes(this.expired.toMinutes()));
+        this.outboxEventRepository.save(event);
+    }
+
+    boolean checkEventExpired(OutboxEvent event){
+        log.debug("Verificando se evento expirou");
+
+        ZonedDateTime expirationTime = event.getCreatedAt().plusMinutes(this.expired.toMinutes());
+
+        if ( ZonedDateTime.now().isAfter(expirationTime)) {
+            log.debug("Evento expirado: {}", event.getId());
+            this.outboxEventRepository.delete(event);
+            return true;
+        }
+        return false;
     }
 
     void sendEvent(OutboxEvent event){
@@ -70,9 +75,14 @@ public class EventSubmissionService implements IEventSubmissionService{
                     MDC.setContextMap(mdcContext);
                 }
 
+                if (this.checkEventExpired(event)) {
+                    return ;
+                }
+
                 log.debug("Preparando conteudo para envio");
-                var header = this.objectMapper.writeValueAsString(Header.builder().traceId(MDC.get("traceId")).build());
-                var message = this.objectMapper.writeValueAsString(this.searchPolicyService.getPolicyById(event.getPolicyId()).map(Event::new).orElseThrow());
+
+                var header = "{\"traceId\":\"" + MDC.get("traceId") + "\"}";
+                var message = event.getEventJson();
 
                 this.kafkaProducer.send(header, message);
 

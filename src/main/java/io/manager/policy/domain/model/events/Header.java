@@ -1,4 +1,4 @@
-package io.manager.policy.application.scheduler.dto;
+package io.manager.policy.domain.model.events;
 
 import lombok.Builder;
 

@@ -1,15 +1,8 @@
 package io.manager.policy.application.service;
 
-import io.manager.policy.application.scheduler.dto.Event;
-import io.manager.policy.application.scheduler.dto.Header;
-import io.manager.policy.domain.model.OutboxEvent;
 import io.manager.policy.domain.model.Policy;
-import io.manager.policy.domain.model.RulesResult;
-import io.manager.policy.domain.model.Status;
-import io.manager.policy.domain.repository.OutboxEventRepository;
+import io.manager.policy.domain.model.enums.Status;
 import io.manager.policy.domain.repository.PolicyRepository;
-import io.manager.policy.domain.rules.IRulesService;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
@@ -51,11 +44,15 @@ public class PolicyValidationService extends HandleStatus implements IPolicyVali
 
         log.debug("Bloco de apolices para analise de risco: {}", policiesRiskAnalysis.size());
         for (var policy : policiesRiskAnalysis){
-            policy.setMaxProcessingTime(ZonedDateTime.now(ZoneId.of("UTC")).plusMinutes(this.expired.toMinutes()));
-            this.policyRepository.save(policy);
+            this.init(policy);
             this.classifyRiskPolicy(policy);
         }
 
+    }
+
+    void init(Policy policy){
+        policy.setMaxProcessingTime(ZonedDateTime.now(ZoneId.of("UTC")).plusMinutes(this.expired.toMinutes()));
+        this.policyRepository.save(policy);
     }
 
     void classifyRiskPolicy(Policy policy) {
@@ -86,7 +83,7 @@ public class PolicyValidationService extends HandleStatus implements IPolicyVali
     @Transactional(rollbackFor = Exception.class)
     void updateDatabaseAndInsertOutboxEvent(Policy policy) {
         this.policyRepository.save(policy);
-        this.insertOutboxEvent(policy.getId(), ZonedDateTime.now(ZoneId.of("UTC")));
+        this.insertOutboxEvent(policy, ZonedDateTime.now(ZoneId.of("UTC")));
     }
 
 }

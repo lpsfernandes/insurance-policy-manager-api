@@ -1,20 +1,19 @@
-package io.manager.policy.application.scheduler.dto;
+package io.manager.policy.domain.model.events;
 
 import io.manager.policy.application.controller.dto.enums.Category;
 import io.manager.policy.application.controller.dto.enums.PaymentMethod;
 import io.manager.policy.application.controller.dto.enums.SalesChannel;
 import io.manager.policy.domain.model.*;
+import io.manager.policy.domain.model.enums.RiskClassification;
+import io.manager.policy.domain.model.enums.Status;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import static io.manager.policy.application.util.Helper.DEFAULT_DECIMAL_PLACES;
 
 
-public record Event(
+public record EventBody(
         String id,
         String clientId,
         Long productId,
@@ -23,12 +22,9 @@ public record Event(
         RiskClassification riskClassification,
         BigDecimal monthlyPremium,
         BigDecimal insuredAmount,
-        Map<String, BigDecimal> coverages,
-        Set<String> assistances,
         PaymentMethod paymentMethod,
         ZonedDateTime createdAt,
         ZonedDateTime finishedAt,
-        Set<StateHistory> history,
         SalesChannel salesChannel
 ) {
     public record StateHistory(
@@ -36,7 +32,7 @@ public record Event(
             ZonedDateTime timestamp
     ) {}
 
-    public Event(Policy policy){
+    public EventBody(Policy policy){
         this(policy.getId(),
                 policy.getClientId(),
                 policy.getProductId(),
@@ -45,22 +41,9 @@ public record Event(
                 policy.getRiskClassification(),
                 new BigDecimal(policy.getMonthlyPremium()).movePointLeft(DEFAULT_DECIMAL_PLACES),
                 new BigDecimal(policy.getInsuredAmount()).movePointLeft(DEFAULT_DECIMAL_PLACES),
-                policy.getCoverages()
-                        .stream()
-                        .collect(Collectors.toMap(Coverage::getTypeCoverage,
-                                c -> new BigDecimal(c.getInsuredAmount()).movePointLeft(DEFAULT_DECIMAL_PLACES))),
-                policy.getAssistances()
-                        .stream()
-                        .map(Assistances::getAssistance)
-                        .collect(Collectors.toSet()),
                 PaymentMethod.valueOf(policy.getPaymentMethod()),
                 policy.getCreatedAt(),
                 policy.getFinishedAt(),
-                policy.getHistory()
-                        .stream()
-                        .map(history ->
-                                new StateHistory(history.getStatus().name(), history.getCreatedAt()))
-                        .collect(Collectors.toSet()),
                 SalesChannel.valueOf(policy.getSalesChannel()));
     }
 

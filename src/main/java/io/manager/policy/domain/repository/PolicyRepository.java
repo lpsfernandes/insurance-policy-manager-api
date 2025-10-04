@@ -1,7 +1,7 @@
 package io.manager.policy.domain.repository;
 
 import io.manager.policy.domain.model.Policy;
-import io.manager.policy.domain.model.Status;
+import io.manager.policy.domain.model.enums.Status;
 import lombok.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;

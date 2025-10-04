@@ -1,4 +1,4 @@
-package io.manager.policy.domain.model;
+package io.manager.policy.domain.model.enums;
 
 public enum RiskClassification {
     HIGH_RISK, MEDIUM_RISK, LOW_RISK, UNCLASSIFIED_RISK

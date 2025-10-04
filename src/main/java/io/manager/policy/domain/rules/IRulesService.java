@@ -1,8 +1,7 @@
 package io.manager.policy.domain.rules;
 
-import io.manager.policy.domain.model.Policy;
-import io.manager.policy.domain.model.RulesResult;
+import io.manager.policy.domain.model.enums.RulesResult;
 
 public interface IRulesService {
-    RulesResult analyze();
+    void analyze();
 }

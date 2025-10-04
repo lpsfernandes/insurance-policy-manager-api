@@ -1,5 +1,6 @@
 package io.manager.policy.domain.model;
 
+import io.manager.policy.domain.model.enums.Status;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

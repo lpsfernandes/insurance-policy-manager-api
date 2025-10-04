@@ -20,8 +20,11 @@ public class OutboxEvent {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "policy_id", nullable = false)
-    String policyId;
+    @Column(name = "event_json", nullable = false)
+    String eventJson;
+
+    @Column(name = "max_processing_time")
+    ZonedDateTime maxProcessingTime;
 
     @Column(name = "created_at", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     ZonedDateTime createdAt;

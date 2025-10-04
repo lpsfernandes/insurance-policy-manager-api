@@ -15,8 +15,8 @@ public class EventTrigger {
 
     private final IEventSubmissionService eventSubmissionService;
 
-//    @Scheduled(fixedDelay = 1000, initialDelay = 0)
-//    @SchedulerLock(name = "trigger.send.event", lockAtMostFor = "PT5M")
+    @Scheduled(fixedDelay = 1000, initialDelay = 0)
+    @SchedulerLock(name = "trigger.send.event", lockAtMostFor = "PT5M")
     public void doWork() {
             this.eventSubmissionService.sendEvent();
     }

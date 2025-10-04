@@ -1,6 +1,6 @@
 package io.manager.policy.domain.repository;
 
-import io.manager.policy.domain.model.RiskClassification;
+import io.manager.policy.domain.model.enums.RiskClassification;
 import io.manager.policy.domain.model.Rules;
 import lombok.NonNull;
 import org.springframework.data.jpa.repository.JpaRepository;

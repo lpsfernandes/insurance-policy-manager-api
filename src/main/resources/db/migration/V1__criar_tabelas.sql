@@ -59,14 +59,12 @@ CREATE TABLE tb_status_history (
 -- Criação da tabela de historico de eventos
 CREATE TABLE tb_outbox_event (
     id SERIAL PRIMARY KEY,
-    policy_id VARCHAR NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_tb_outbox_event_policy
-        FOREIGN KEY (policy_id)
-        REFERENCES tb_policies(id)
-        ON DELETE CASCADE
+    event_json VARCHAR NOT NULL,
+    max_processing_time TIMESTAMP,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE INDEX idx_tb_outbox_event_created_at ON tb_outbox_event(created_at);
 
 -- Criação da tabela de resultado da analise de risco
 CREATE TABLE tb_risk_analysis (

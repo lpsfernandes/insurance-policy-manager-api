@@ -2,6 +2,7 @@ package io.manager.policy.application.service;
 
 import io.manager.policy.application.controller.dto.PolicyRequest;
 import io.manager.policy.domain.model.*;
+import io.manager.policy.domain.model.enums.Status;
 import io.manager.policy.domain.repository.AssistancesRepository;
 import io.manager.policy.domain.repository.CoverageRepository;
 import io.manager.policy.domain.repository.PolicyRepository;
@@ -48,7 +49,7 @@ public class CreatePolicyService extends HandleStatus implements ICreatePolicySe
 
             this.insertStatusHistory(id, retPolicy.getStatus(), retPolicy.getCreatedAt());
 
-            this.insertOutboxEvent(id, retPolicy.getCreatedAt());
+            this.insertOutboxEvent(retPolicy);
 
             return Optional.of(retPolicy);
 
