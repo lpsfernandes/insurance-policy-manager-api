@@ -36,7 +36,7 @@ public class CreatePolicyService extends HandleStatus implements ICreatePolicySe
     @Transactional(rollbackFor = Exception.class)
     public Optional<Policy> createPolicy(PolicyRequest request) {
         try {
-            log.debug("Processando requisicao para registro de apolice, cliente: {} / produto: {} / cetegoria: {}",
+            log.debug("Processando requisicao para registro de apolice, cliente:{} /produto:{} /cetegoria:{}",
                     request.clientId(), request.productId(), request.category());
 
             String id = UUID.randomUUID().toString();
@@ -75,7 +75,7 @@ public class CreatePolicyService extends HandleStatus implements ICreatePolicySe
                 .build();
 
         var retPolicy = this.policyRepository.save(policy);
-        log.debug("Id da apolice: {} - registrado com sucesso no banco de dados", id);
+        log.debug("Id da apolice: {}", id);
         return retPolicy;
     }
 

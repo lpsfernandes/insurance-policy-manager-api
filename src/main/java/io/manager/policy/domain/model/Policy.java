@@ -1,5 +1,6 @@
 package io.manager.policy.domain.model;
 
+import io.manager.policy.domain.exception.StatusNotAllowed;
 import io.manager.policy.domain.model.enums.RiskClassification;
 import io.manager.policy.domain.model.enums.Status;
 import jakarta.persistence.*;
@@ -69,5 +70,11 @@ public class Policy {
 
     @OneToMany(mappedBy = "policyId", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     Set<Assistances> assistances;
+
+    public void setStatus(Status newStatus){
+        if (!this.status.canTransitionTo(newStatus))
+            throw new StatusNotAllowed(this.status, newStatus);
+        this.status = newStatus;
+    }
 
 }

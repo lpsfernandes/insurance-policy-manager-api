@@ -65,7 +65,7 @@ public class PolicyValidationService extends HandleStatus implements IPolicyVali
                     MDC.setContextMap(mdcContext);
                 }
                 var risk = this.riskAnalysisService.analyzeRisk(policy);
-                log.debug("Apolice {} - com classificacao {}", policy.getId(), risk);
+                log.debug("Apolice {} com classificacao {}", policy.getId(), risk);
 
                 policy.setRiskClassification(risk);
                 policy.setStatus(Status.VALIDATED);

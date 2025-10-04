@@ -3,7 +3,9 @@ package io.manager.policy.application.controller;
 import io.manager.policy.application.controller.dto.PolicyCreatedResponse;
 import io.manager.policy.application.controller.dto.PolicyRequest;
 import io.manager.policy.application.controller.dto.PolicyResponse;
+import io.manager.policy.application.controller.dto.UpdatePoliceRequest;
 import io.manager.policy.application.service.ICreatePolicyService;
+import io.manager.policy.application.service.IPolicyStatusHandler;
 import io.manager.policy.application.service.ISearchPolicyService;
 import io.manager.policy.domain.exception.CreatePolicyException;
 import io.manager.policy.domain.exception.PolicyNotFound;
@@ -33,6 +35,7 @@ public class PolicyController {
 
     private final ICreatePolicyService createPolicyService;
     private final ISearchPolicyService searchPolicyService;
+    private final IPolicyStatusHandler policyStatusHandler;
 
     @Operation(summary = "Registrar apólice de seguro para processamento")
     @ApiResponses(value = {
@@ -61,10 +64,14 @@ public class PolicyController {
             @ApiResponse(responseCode = "404",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                                         schema = @Schema(implementation = ProblemDetail.class)),
-                    description = "Recurso não encontrado")
+                    description = "Recurso não encontrado"),
+            @ApiResponse(responseCode = "500",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ProblemDetail.class)),
+                    description = "Ocorreu um erro durante a consulta, tente novamente mais tarde")
     })
     @GetMapping("/{id}")
-    public PolicyResponse getPolicy(@RequestParam(name = "id") String policyId) {
+    public PolicyResponse getPolicy(@PathVariable(name = "id") String policyId) {
         return this.searchPolicyService.getPolicyById(policyId)
                 .map(PolicyResponse::new)
                 .orElseThrow(() -> new PolicyNotFound(policyId));
@@ -76,6 +83,7 @@ public class PolicyController {
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                             schema = @Schema(implementation = Page.class)))
     })
+
     @GetMapping
     public Page<PolicyResponse> getPolicies(@RequestParam(name = "clientId", required = false) String clientId,
                             @RequestParam (required = false, defaultValue = "0") Integer page,
@@ -97,5 +105,31 @@ public class PolicyController {
                 .orElseThrow();
 
 
+    }
+
+    @Operation(summary = "Atualizar status de uma apólice de seguro por ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = PolicyResponse.class))),
+            @ApiResponse(responseCode = "404",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ProblemDetail.class)),
+                    description = "Recurso não encontrado"),
+            @ApiResponse(responseCode = "422",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ProblemDetail.class)),
+                    description = "Status não permitido"),
+            @ApiResponse(responseCode = "500",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ProblemDetail.class)),
+                    description = "Ocorreu um erro durante a tentar atualizar o status, tente novamente mais tarde")
+    })
+    @PatchMapping("/{id}")
+    public PolicyResponse statusHandler(@PathVariable(name = "id") String policyId,
+                                        @RequestBody UpdatePoliceRequest request) {
+        return this.policyStatusHandler.statusHandler(policyId, request.status())
+                .map(PolicyResponse::new)
+                .orElseThrow(() -> new PolicyNotFound(policyId));
     }
 }

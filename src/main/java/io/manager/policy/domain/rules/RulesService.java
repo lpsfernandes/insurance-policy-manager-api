@@ -58,7 +58,7 @@ public class RulesService extends HandleStatus implements IRulesService {
         if (policy.getRiskClassification() == null)
             throw new RiskClassificationException();
 
-        log.debug("Analisando regras para apolice {} - classificacao {}", policy.getId(), policy.getRiskClassification());
+        log.debug("Analisando regras para apolice {} classificacao {}", policy.getId(), policy.getRiskClassification());
 
         var rules = this.rulesRepository.findByRiskClassification(policy.getRiskClassification())
                 .stream()
