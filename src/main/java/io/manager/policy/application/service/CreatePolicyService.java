@@ -1,6 +1,7 @@
 package io.manager.policy.application.service;
 
 import io.manager.policy.application.controller.dto.PolicyRequest;
+import io.manager.policy.application.service.interfaces.ICreatePolicyService;
 import io.manager.policy.domain.model.*;
 import io.manager.policy.domain.model.enums.Status;
 import io.manager.policy.domain.repository.AssistancesRepository;
@@ -25,7 +26,7 @@ import static io.manager.policy.application.util.Helper.DEFAULT_DECIMAL_PLACES;
 @Slf4j
 @Service
 @AllArgsConstructor
-public class CreatePolicyService extends HandleStatus implements ICreatePolicyService  {
+public class CreatePolicyService extends HandleStatus implements ICreatePolicyService {
 
     private final PolicyRepository policyRepository;
     private final CoverageRepository coverageRepository;
@@ -66,8 +67,8 @@ public class CreatePolicyService extends HandleStatus implements ICreatePolicySe
                     .clientId(request.clientId())
                     .productId(request.productId())
                     .category(request.category().name())
-                    .salesChannel(request.salesChannel().name())
                     .paymentMethod(request.paymentMethod().name())
+                    .salesChannel(request.salesChannel().name())
                     .insuredAmount(request.insuredAmount().movePointRight(DEFAULT_DECIMAL_PLACES).longValue())
                     .monthlyPremium(request.monthlyPremium().movePointRight(DEFAULT_DECIMAL_PLACES).longValue())
                     .status(Status.RECEIVED)

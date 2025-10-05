@@ -39,6 +39,14 @@ spring:
       group-id: ${spring.application.name}
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      retry:
+        interval: 100 #ms
+        maxAttempts: 3
+      topics:
+        insurance-subscription: topico-subscricao
+        payments: topico-pagamentos
+      listener:
+        concurrency: 4
     producer:
       acks: all
       key-serializer: org.apache.kafka.common.serialization.StringSerializer

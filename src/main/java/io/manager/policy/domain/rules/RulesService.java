@@ -69,7 +69,9 @@ public class RulesService extends HandleStatus implements IRulesService {
         rules.forEach(r -> log.debug("Apolice validada pela regra {}", r));
 
         var status = rules.isEmpty() ? Status.REJECTED : Status.PENDING;
+        var finishedAt = status == Status.REJECTED ? ZonedDateTime.now(ZoneId.of("UTC")) : null;
 
+        policy.setFinishedAt(finishedAt);
         policy.setStatus(status);
         policy.setMaxProcessingTime(null);
 

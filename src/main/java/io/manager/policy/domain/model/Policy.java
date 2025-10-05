@@ -52,11 +52,20 @@ public class Policy {
     @Column(name = "created_at", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     ZonedDateTime createdAt;
 
-    @Column(name = "finished_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    @Column(name = "finished_at")
     ZonedDateTime finishedAt;
+
+    @Column(name = "payment_date")
+    ZonedDateTime paymentDate;
+
+    @Column(name = "subscription_date")
+    ZonedDateTime subscriptionDate;
 
     @Column(name = "max_processing_time")
     ZonedDateTime maxProcessingTime;
+
+    @Column
+    String reason;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

@@ -1,6 +1,5 @@
 package io.manager.policy.application.scheduler;
 
-import io.manager.policy.application.service.IPolicyValidationService;
 import io.manager.policy.domain.rules.IRulesService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

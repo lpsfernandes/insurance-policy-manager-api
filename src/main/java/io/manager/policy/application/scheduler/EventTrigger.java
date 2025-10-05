@@ -1,6 +1,6 @@
 package io.manager.policy.application.scheduler;
 
-import io.manager.policy.application.service.IEventSubmissionService;
+import io.manager.policy.application.service.interfaces.IEventSubmissionService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;

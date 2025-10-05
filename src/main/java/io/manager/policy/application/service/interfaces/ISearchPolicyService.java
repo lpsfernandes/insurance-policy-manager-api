@@ -1,10 +1,9 @@
-package io.manager.policy.application.service;
+package io.manager.policy.application.service.interfaces;
 
 import io.manager.policy.domain.model.Policy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
-import java.util.List;
 import java.util.Optional;
 
 public interface ISearchPolicyService {

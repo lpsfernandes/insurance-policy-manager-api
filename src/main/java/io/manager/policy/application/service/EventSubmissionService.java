@@ -1,5 +1,6 @@
 package io.manager.policy.application.service;
 
+import io.manager.policy.application.service.interfaces.IEventSubmissionService;
 import io.manager.policy.boundaries.driven.producer.KafkaProducer;
 import io.manager.policy.domain.model.OutboxEvent;
 import io.manager.policy.domain.repository.OutboxEventRepository;
@@ -17,7 +18,7 @@ import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @Service
-public class EventSubmissionService implements IEventSubmissionService{
+public class EventSubmissionService implements IEventSubmissionService {
 
     private final Duration expired;
     private final OutboxEventRepository outboxEventRepository;
@@ -81,7 +82,7 @@ public class EventSubmissionService implements IEventSubmissionService{
 
                 log.debug("Preparando conteudo para envio");
 
-                var header = "{\"traceId\":\"" + MDC.get("traceId") + "\"}";
+                var header = "{\"traceparent\":\"" + MDC.get("traceId") + "\"}";
                 var message = event.getEventJson();
 
                 this.kafkaProducer.send(header, message);

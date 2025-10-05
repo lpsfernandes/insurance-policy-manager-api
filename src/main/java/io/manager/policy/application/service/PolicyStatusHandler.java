@@ -1,5 +1,6 @@
 package io.manager.policy.application.service;
 
+import io.manager.policy.application.service.interfaces.IPolicyStatusHandler;
 import io.manager.policy.domain.model.Policy;
 import io.manager.policy.domain.model.enums.Status;
 import io.manager.policy.domain.repository.PolicyRepository;
@@ -13,7 +14,7 @@ import java.util.Optional;
 @Slf4j
 @Service
 @AllArgsConstructor
-public class PolicyStatusHandler extends HandleStatus implements IPolicyStatusHandler{
+public class PolicyStatusHandler extends HandleStatus implements IPolicyStatusHandler {
 
     private final PolicyRepository policyRepository;
     private final IRulesService rulesService;

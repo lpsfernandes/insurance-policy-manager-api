@@ -1,5 +1,6 @@
 package io.manager.policy.application.service;
 
+import io.manager.policy.application.service.interfaces.IRiskAnalysisService;
 import io.manager.policy.boundaries.driving.http.client.FraudPreventionClient;
 import io.manager.policy.boundaries.driving.http.dto.RiskAnalysisRequest;
 import io.manager.policy.boundaries.driving.http.dto.RiskAnalysisResponse;
@@ -17,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class RiskAnalysisService implements IRiskAnalysisService{
+public class RiskAnalysisService implements IRiskAnalysisService {
 
     private final FraudPreventionClient fraudPreventionClient;
     private final RiskAnalysisRepository riskAnalysisRepository;

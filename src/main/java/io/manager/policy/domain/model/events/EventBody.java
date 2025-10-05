@@ -14,7 +14,7 @@ import static io.manager.policy.application.util.Helper.DEFAULT_DECIMAL_PLACES;
 
 
 public record EventBody(
-        String id,
+        String orderId,
         String clientId,
         Long productId,
         Category category,
@@ -23,6 +23,9 @@ public record EventBody(
         BigDecimal monthlyPremium,
         BigDecimal insuredAmount,
         PaymentMethod paymentMethod,
+        ZonedDateTime paymentDate,
+        ZonedDateTime subscriptionDate,
+        String reason,
         ZonedDateTime createdAt,
         ZonedDateTime finishedAt,
         SalesChannel salesChannel
@@ -42,6 +45,9 @@ public record EventBody(
                 new BigDecimal(policy.getMonthlyPremium()).movePointLeft(DEFAULT_DECIMAL_PLACES),
                 new BigDecimal(policy.getInsuredAmount()).movePointLeft(DEFAULT_DECIMAL_PLACES),
                 PaymentMethod.valueOf(policy.getPaymentMethod()),
+                policy.getPaymentDate(),
+                policy.getSubscriptionDate(),
+                policy.getReason(),
                 policy.getCreatedAt(),
                 policy.getFinishedAt(),
                 SalesChannel.valueOf(policy.getSalesChannel()));

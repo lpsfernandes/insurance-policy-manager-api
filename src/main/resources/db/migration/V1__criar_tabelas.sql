@@ -10,8 +10,11 @@ CREATE TABLE tb_policies (
     insured_amount BIGINT NOT NULL,
     monthly_premium BIGINT NOT NULL,
     max_processing_time TIMESTAMP,
+    payment_date TIMESTAMP,
+    subscription_date TIMESTAMP,
+    reason VARCHAR,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    finished_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    finished_at TIMESTAMP,
     status VARCHAR NOT NULL
 );
 

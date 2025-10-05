@@ -1,5 +1,6 @@
 package io.manager.policy.application.service;
 
+import io.manager.policy.application.service.interfaces.ISearchPolicyService;
 import io.manager.policy.domain.model.Policy;
 import io.manager.policy.domain.repository.PolicyRepository;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +13,7 @@ import java.util.Optional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class SearchPolicyService implements ISearchPolicyService{
+public class SearchPolicyService implements ISearchPolicyService {
 
     private final PolicyRepository policyRepository;
 

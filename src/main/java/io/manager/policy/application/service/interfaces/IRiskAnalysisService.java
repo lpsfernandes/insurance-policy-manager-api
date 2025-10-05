@@ -1,4 +1,4 @@
-package io.manager.policy.application.service;
+package io.manager.policy.application.service.interfaces;
 
 import io.manager.policy.domain.model.Policy;
 import io.manager.policy.domain.model.enums.RiskClassification;

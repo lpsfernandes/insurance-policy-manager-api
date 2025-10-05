@@ -12,7 +12,7 @@ public class CorrelationIdInterceptor implements RequestInterceptor {
     public void apply(RequestTemplate template) {
         String traceId = MDC.get("traceId"); // ou Sleuth's TraceContext
         if (traceId != null) {
-            template.header("X-Trace-Id", traceId);
+            template.header("traceparent", traceId);
         }
 
         String correlationId = MDC.get("correlationId");

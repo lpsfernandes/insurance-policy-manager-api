@@ -27,6 +27,9 @@ public record PolicyResponse(
         Map<String, BigDecimal> coverages,
         Set<String> assistances,
         PaymentMethod paymentMethod,
+        ZonedDateTime paymentDate,
+        ZonedDateTime subscriptionDate,
+        String reason,
         ZonedDateTime createdAt,
         ZonedDateTime finishedAt,
         Set<StateHistory> history,
@@ -55,6 +58,9 @@ public record PolicyResponse(
                         .map(Assistances::getAssistance)
                         .collect(Collectors.toSet()),
                 PaymentMethod.valueOf(policy.getPaymentMethod()),
+                policy.getPaymentDate(),
+                policy.getSubscriptionDate(),
+                policy.getReason(),
                 policy.getCreatedAt(),
                 policy.getFinishedAt(),
                 policy.getHistory()
