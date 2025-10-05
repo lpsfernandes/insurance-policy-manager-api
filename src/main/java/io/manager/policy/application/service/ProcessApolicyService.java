@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
@@ -21,6 +22,7 @@ import java.time.ZonedDateTime;
 public class ProcessApolicyService extends HandleStatus implements IProcessApolicyService {
 
     private final PolicyRepository policyRepository;
+    private final BusinessMetricsCollector metricsCollector;
 
     @Override
     public void process(PaymentEvent event) {
@@ -32,6 +34,7 @@ public class ProcessApolicyService extends HandleStatus implements IProcessApoli
                                 var reason = p.getReason() != null ? p.getReason() : "Pagamento nao realizado";
                                 p.setReason(reason);
                                 this.save(p);
+                                this.metricsCollector.incrementkafkaEventsPaymentRejected();
                                 return ;
                             }
 
@@ -40,7 +43,7 @@ public class ProcessApolicyService extends HandleStatus implements IProcessApoli
                             p.setPaymentDate(event.paymentDateTime());
                             p.setStatus(status);
                             this.save(p);
-
+                            this.metricsCollector.incrementkafkaEventsPaymentApproved();
                         },
                         () -> log.warn("Apolice {} nao encontrada. Evento de pagamento sera descartado", event.orderId()));
 
@@ -56,6 +59,7 @@ public class ProcessApolicyService extends HandleStatus implements IProcessApoli
                                 var reason = p.getReason() != null ? p.getReason() : "Subscricao nao aprovada";
                                 p.setReason(reason);
                                 this.save(p);
+                                this.metricsCollector.incrementkafkaEventsSubscriptionRejected();
                                 return ;
                             }
 
@@ -64,15 +68,17 @@ public class ProcessApolicyService extends HandleStatus implements IProcessApoli
                             p.setStatus(status);
                             p.setSubscriptionDate(event.subscriptionDateTime());
                             this.save(p);
-
+                            this.metricsCollector.incrementkafkaEventsSubscriptionApproved();
                         },
                         () -> log.warn("Apolice {} nao encontrada. Evento de subscricao sera descartado", event.orderId()));
     }
 
 
     void save(Policy policy) {
-        if (this.lifeCycleCompleted(policy))
+        if (this.lifeCycleCompleted(policy)) {
             policy.setFinishedAt(ZonedDateTime.now(ZoneId.of("UTC")));
+            this.collectMetrics(policy);
+        }
 
         this.insertOutboxEvent(policy, ZonedDateTime.now(ZoneId.of("UTC")));
 
@@ -81,5 +87,14 @@ public class ProcessApolicyService extends HandleStatus implements IProcessApoli
 
     boolean lifeCycleCompleted(Policy policy){
         return policy.getStatus() == Status.APPROVED || policy.getStatus() == Status.REJECTED;
+    }
+
+    void collectMetrics(Policy policy) {
+        this.metricsCollector.recordPolicyProcessingTime(() -> Duration.between(policy.getCreatedAt(), policy.getFinishedAt()));
+        if (policy.getStatus() == Status.APPROVED) {
+            this.metricsCollector.incrementPoliciesApproved();
+        } else {
+            this.metricsCollector.incrementPoliciesRejected();
+        }
     }
 }

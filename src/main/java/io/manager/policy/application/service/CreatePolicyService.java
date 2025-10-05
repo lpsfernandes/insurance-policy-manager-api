@@ -32,6 +32,7 @@ public class CreatePolicyService extends HandleStatus implements ICreatePolicySe
     private final CoverageRepository coverageRepository;
     private final AssistancesRepository assistancesRepositorylicy;
     private final StatusHistoryRepository statusHistoryRepository;
+    private final BusinessMetricsCollector metricsCollector;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -51,6 +52,8 @@ public class CreatePolicyService extends HandleStatus implements ICreatePolicySe
             this.insertStatusHistory(id, retPolicy.getStatus(), retPolicy.getCreatedAt());
 
             this.insertOutboxEvent(retPolicy);
+
+            this.metricsCollector.incrementPoliciesCreated();
 
             return Optional.of(retPolicy);
 

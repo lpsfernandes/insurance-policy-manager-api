@@ -23,13 +23,16 @@ public class EventSubmissionService implements IEventSubmissionService {
     private final Duration expired;
     private final OutboxEventRepository outboxEventRepository;
     private final KafkaProducer kafkaProducer;
+    private final BusinessMetricsCollector metricsCollector;
 
     public EventSubmissionService(@Value("${scheduler.send-event.maxTime:PT1M}") Duration expired,
                                   OutboxEventRepository outboxEventRepository,
-                                  KafkaProducer kafkaProducer) {
+                                  KafkaProducer kafkaProducer,
+                                  BusinessMetricsCollector metricsCollector) {
         this.outboxEventRepository = outboxEventRepository;
         this.kafkaProducer = kafkaProducer;
         this.expired = expired;
+        this.metricsCollector = metricsCollector;
     }
 
     @Override
@@ -86,6 +89,8 @@ public class EventSubmissionService implements IEventSubmissionService {
                 var message = event.getEventJson();
 
                 this.kafkaProducer.send(header, message);
+
+                this.metricsCollector.incrementKafkaEventProduced();
 
                 this.outboxEventRepository.delete(event);
             } catch (Exception e){

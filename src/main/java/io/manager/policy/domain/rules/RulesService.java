@@ -1,5 +1,6 @@
 package io.manager.policy.domain.rules;
 
+import io.manager.policy.application.service.BusinessMetricsCollector;
 import io.manager.policy.application.service.HandleStatus;
 import io.manager.policy.domain.exception.RiskClassificationException;
 import io.manager.policy.domain.model.Policy;
@@ -24,13 +25,15 @@ public class RulesService extends HandleStatus implements IRulesService {
     private final Duration expired;
     private final PolicyRepository policyRepository;
     private final RulesRepository rulesRepository;
+    private final BusinessMetricsCollector metricsCollector;
 
     public RulesService(@Value("${scheduler.rules-analysis.maxTime:PT1M}") Duration expired,
                         PolicyRepository policyRepository,
-                        RulesRepository rulesRepository) {
+                        RulesRepository rulesRepository, BusinessMetricsCollector metricsCollector) {
         this.expired = expired;
         this.policyRepository = policyRepository;
         this.rulesRepository = rulesRepository;
+        this.metricsCollector = metricsCollector;
     }
 
     @Override
@@ -75,8 +78,18 @@ public class RulesService extends HandleStatus implements IRulesService {
         policy.setStatus(status);
         policy.setMaxProcessingTime(null);
 
+        this.collectMetrics(policy);
+
         this.updateDatabaseAndInsertOutboxEvent(policy);
 
+    }
+
+    void collectMetrics(Policy policy) {
+        if (policy.getStatus() == Status.REJECTED) {
+            this.metricsCollector.incrementPoliciesRejected();
+            this.metricsCollector.recordPolicyProcessingTime(() ->
+                    Duration.between(policy.getCreatedAt(), policy.getFinishedAt()));
+        }
     }
 
     @Transactional

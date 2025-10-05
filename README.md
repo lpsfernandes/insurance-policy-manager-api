@@ -56,16 +56,6 @@ docker-compose up -d
 - Spring Boot JVM: ID 4701
 - Métricas customizadas: ID 17053
 
-### 🔍 Principais métricas disponíveis
-
-| Categoria         | Métricas coletadas                                                                 |
-|-------------------|------------------------------------------------------------------------------------|
-| **JVM**           | Uso de memória, GC (garbage collection), threads, buffers, classes carregadas     |
-| **Sistema**       | Carga da CPU, tempo de uptime, uso de disco e swap (dependente do ambiente)       |
-| **Processo**      | Tempo de execução, número de arquivos abertos, uso de CPU por processo            |
-| **Tomcat/Undertow** | Conexões, tempo de resposta, requisições ativas (se aplicável ao servidor usado) |
-
-
 
 ## 📡 Endpoints da API
 A API está disponível em: http://localhost:8080/api/v1/policy
@@ -483,6 +473,30 @@ O serviço de análise de risco é simulado pelo MockServer e responde ao endpoi
 | `CLIENTID_LOW_RISK`        | `CLIENTID_LOW_RISK`          | `LOW_RISK`             | Nenhuma                | Cliente com perfil seguro                                    |
 | `CLIENTID_MEDIUM_RISK`     | `CLIENTID_MEDIUM_RISK`       | `MEDIUM_RISK`          | Nenhuma                | Cliente com risco intermediário                              |
 | *(qualquer outro valor)*   | `7c2a27ba-71ef-4dd8-a3cf...` | `UNCLASSIFIED_RISK`    | Nenhuma                | Cliente sem histórico ou não mapeado                         |
+
+##  📈 Métricas
+
+#### 🔍 Principais métricas de saude da API
+
+| Categoria         | Métricas coletadas                                                                 |
+|-------------------|------------------------------------------------------------------------------------|
+| **JVM**           | Uso de memória, GC (garbage collection), threads, buffers, classes carregadas     |
+| **Sistema**       | Carga da CPU, tempo de uptime, uso de disco e swap (dependente do ambiente)       |
+| **Processo**      | Tempo de execução, número de arquivos abertos, uso de CPU por processo            |
+| **Tomcat/Undertow** | Conexões, tempo de resposta, requisições ativas (se aplicável ao servidor usado) |
+
+#### 📊 Principais métricas de negócio da aplicação
+
+| Categoria                                    | Métricas coletadas                                                   |
+|----------------------------------------------|----------------------------------------------------------------------|
+| **Apólices**                                 | Total de apólices criadas, aprovadas e rejeitadas                    |
+| **Eventos de Pagamento**                     | Eventos consumidos, aprovados e rejeitados relacionados a pagamento  |
+| **Eventos de Subscrição**                    | Eventos consumidos, aprovados e rejeitados relacionados a assinatura |
+| **Eventos de Alteração do status da Apólice** | Total de eventos produzidos para tópicos Kafka                       |
+| **Análise de Risco**                         | Classificação de risco por apólice                                   |
+| **Tempo de Processamento**                   | Duração do processamento de apólices                                 |
+
+
 
 ## 🛠️ Configurações importantes
 - Banco de dados: appdb com usuário admin e senha admin123

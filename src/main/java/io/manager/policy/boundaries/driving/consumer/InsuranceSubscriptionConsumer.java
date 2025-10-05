@@ -2,6 +2,7 @@ package io.manager.policy.boundaries.driving.consumer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.manager.policy.application.service.BusinessMetricsCollector;
 import io.manager.policy.application.service.interfaces.IProcessApolicyService;
 import io.manager.policy.boundaries.driving.consumer.dto.InsuranceSubscriptionEvent;
 import lombok.AllArgsConstructor;
@@ -17,6 +18,7 @@ public class InsuranceSubscriptionConsumer {
 
     private final ObjectMapper objectMapper;
     private final IProcessApolicyService processApolicyService;
+    private final BusinessMetricsCollector metricsCollector;
 
     @KafkaListener(topics = "${spring.kafka.consumer.topics.insurance-subscription}",
             concurrency = "${spring.kafka.listener.concurrency:1}",
@@ -26,6 +28,7 @@ public class InsuranceSubscriptionConsumer {
             if (!message.isEmpty()) {
                 var event = this.objectMapper.readValue(message, InsuranceSubscriptionEvent.class);
                 this.processApolicyService.process(event);
+                metricsCollector.incrementKafkaSubscriptionEventConsumed();
             }
         } catch (JsonProcessingException e){
             log.error("Mensagem nao pode ser lida corretamente: {} - motivo {}. Evento descartado ", message, e.getMessage(), e);

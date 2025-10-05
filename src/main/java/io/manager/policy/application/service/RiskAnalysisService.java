@@ -23,6 +23,7 @@ public class RiskAnalysisService implements IRiskAnalysisService {
     private final FraudPreventionClient fraudPreventionClient;
     private final RiskAnalysisRepository riskAnalysisRepository;
     private final OccurrencesRepository occurrencesRepository;
+    private final BusinessMetricsCollector metricsCollector;
 
     @Override
     public RiskClassification analyzeRisk(Policy policy) {
@@ -38,7 +39,7 @@ public class RiskAnalysisService implements IRiskAnalysisService {
                                                             .build());
 
         this.saveAnalyzeRisk(policy.getId(), response);
-
+        this.metricsCollector.incrementRiskAnalysis(response.classification().toLowerCase());
         return RiskClassification.valueOf(response.classification());
     }
 

@@ -1,13 +1,15 @@
 package io.manager.policy.boundaries.driving.http.dto;
 
+import jakarta.validation.constraints.NotNull;
+
 import java.time.ZonedDateTime;
 import java.util.List;
 
 public record RiskAnalysisResponse(
-        String orderId,
+        @NotNull String orderId,
         String clientId,
         ZonedDateTime analyzedAt,
-        String classification,
+        @NotNull String classification,
         List<Occurrence> occurrences
 ) {
     public record Occurrence(

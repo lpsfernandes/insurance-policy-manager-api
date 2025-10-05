@@ -26,7 +26,6 @@ public class PolicyValidationService extends HandleStatus implements IPolicyVali
     private final PolicyRepository policyRepository;
     private final IRiskAnalysisService riskAnalysisService;
 
-
     protected PolicyValidationService(@Value("${scheduler.risk-analysis.maxTime:PT1M}") Duration expired,
                                       PolicyRepository policyRepository,
                                       IRiskAnalysisService riskAnalysisService) {
