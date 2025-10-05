@@ -54,11 +54,13 @@ management:
   endpoints:
     web:
       exposure:
-        include: health, info, prometheus
+        include: "*"
   endpoint:
     prometheus:
       enabled: true
   metrics:
+    enable:
+      jvm: true
     export:
       prometheus:
         enabled: true
