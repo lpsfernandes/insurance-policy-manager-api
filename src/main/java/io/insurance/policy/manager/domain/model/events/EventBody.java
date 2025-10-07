@@ -1,8 +1,8 @@
 package io.insurance.policy.manager.domain.model.events;
 
-import io.insurance.policy.manager.application.controller.dto.enums.Category;
-import io.insurance.policy.manager.application.controller.dto.enums.PaymentMethod;
-import io.insurance.policy.manager.application.controller.dto.enums.SalesChannel;
+import io.insurance.policy.manager.boundaries.driving.http.dto.enums.Category;
+import io.insurance.policy.manager.boundaries.driving.http.dto.enums.PaymentMethod;
+import io.insurance.policy.manager.boundaries.driving.http.dto.enums.SalesChannel;
 import io.insurance.policy.manager.domain.model.Policy;
 import io.insurance.policy.manager.domain.model.enums.RiskClassification;
 import io.insurance.policy.manager.domain.model.enums.Status;

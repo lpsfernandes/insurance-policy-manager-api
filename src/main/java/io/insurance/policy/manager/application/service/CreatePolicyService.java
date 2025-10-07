@@ -1,6 +1,6 @@
 package io.insurance.policy.manager.application.service;
 
-import io.insurance.policy.manager.application.controller.dto.PolicyRequest;
+import io.insurance.policy.manager.boundaries.driving.http.dto.PolicyRequest;
 import io.insurance.policy.manager.application.service.interfaces.ICreatePolicyService;
 import io.insurance.policy.manager.domain.model.Assistances;
 import io.insurance.policy.manager.domain.model.Coverage;
@@ -38,32 +38,28 @@ public class CreatePolicyService extends HandleStatus implements ICreatePolicySe
     private final BusinessMetricsCollector metricsCollector;
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
+    @Transactional
     public Optional<Policy> createPolicy(PolicyRequest request) {
-        try {
-            log.debug("Processando requisicao para registro de apolice, cliente:{} /produto:{} /cetegoria:{}",
-                    request.clientId(), request.productId(), request.category());
 
-            String id = UUID.randomUUID().toString();
+        log.debug("Processando requisicao para registro de apolice, cliente:{} /produto:{} /cetegoria:{}",
+                request.clientId(), request.productId(), request.category());
 
-            var retPolicy = this.insertPolicy(id, request);
+        String id = UUID.randomUUID().toString();
 
-            this.insertAssistances(id, request.assistances());
+        var retPolicy = this.insertPolicy(id, request);
 
-            this.insertCoverages(id, request.coverages());
+        this.insertAssistances(id, request.assistances());
 
-            this.insertStatusHistory(id, retPolicy.getStatus(), retPolicy.getCreatedAt());
+        this.insertCoverages(id, request.coverages());
 
-            this.insertOutboxEvent(retPolicy);
+        this.insertStatusHistory(id, retPolicy.getStatus(), retPolicy.getCreatedAt());
 
-            this.metricsCollector.incrementPoliciesCreated();
+        this.insertOutboxEvent(retPolicy);
 
-            return Optional.of(retPolicy);
+        this.metricsCollector.incrementPoliciesCreated();
 
-        } catch (Exception e) {
-            log.error("Falha ao tentar cadastrar apolice: {}", e.getMessage(), e);
-            return Optional.empty();
-        }
+        return Optional.of(retPolicy);
+
     }
 
      Policy insertPolicy(String id, PolicyRequest request) {
@@ -78,6 +74,7 @@ public class CreatePolicyService extends HandleStatus implements ICreatePolicySe
                     .insuredAmount(request.insuredAmount().movePointRight(DEFAULT_DECIMAL_PLACES).longValue())
                     .monthlyPremium(request.monthlyPremium().movePointRight(DEFAULT_DECIMAL_PLACES).longValue())
                     .status(Status.RECEIVED)
+                    .processingStatus(ProcessingStatus.AWAITING_RISK_ANALYSIS)
                     .createdAt(ZonedDateTime.now(ZoneId.of("UTC")))
                 .build();
 

@@ -24,8 +24,10 @@ public class EventSubmissionService implements IEventSubmissionService {
     private final OutboxEventRepository outboxEventRepository;
     private final KafkaProducer kafkaProducer;
     private final BusinessMetricsCollector metricsCollector;
+    private final String topicName;
 
     public EventSubmissionService(@Value("${scheduler.send-event.maxTime:PT1M}") Duration expired,
+                                  @Value("${spring.kafka.producer.topic.notification}") String topicName,
                                   OutboxEventRepository outboxEventRepository,
                                   KafkaProducer kafkaProducer,
                                   BusinessMetricsCollector metricsCollector) {
@@ -33,6 +35,7 @@ public class EventSubmissionService implements IEventSubmissionService {
         this.kafkaProducer = kafkaProducer;
         this.expired = expired;
         this.metricsCollector = metricsCollector;
+        this.topicName = topicName;
     }
 
     @Override
@@ -42,7 +45,6 @@ public class EventSubmissionService implements IEventSubmissionService {
         var eventsPendingProcessing = this.outboxEventRepository
                 .findByEventsPendingProcessing(ZonedDateTime.now(ZoneId.of("UTC")),pageable);
 
-        log.debug("Bloco de evento para envio: {}", eventsPendingProcessing.size());
         for (var event : eventsPendingProcessing){
             this.init(event);
             this.sendEvent(event);
@@ -88,7 +90,7 @@ public class EventSubmissionService implements IEventSubmissionService {
                 var header = "{\"traceparent\":\"" + MDC.get("traceId") + "\"}";
                 var message = event.getEventJson();
 
-                this.kafkaProducer.send(header, message);
+                this.kafkaProducer.send(header, message, this.topicName);
 
                 this.metricsCollector.incrementKafkaEventProduced();
 

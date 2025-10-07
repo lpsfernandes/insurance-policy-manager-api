@@ -1,4 +1,4 @@
-package io.insurance.policy.manager.boundaries.driving.http.dto;
+package io.insurance.policy.manager.boundaries.driven.http.dto;
 
 import jakarta.validation.constraints.NotNull;
 

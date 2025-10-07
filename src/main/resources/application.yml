@@ -46,13 +46,18 @@ spring:
       topics:
         insurance-subscription: topico-subscricao
         payments: topico-pagamentos
+        rule-processing: topico-validacao-regras
+        risk-analysis-processing: topico-analise-risco
       listener:
         concurrency: 4
     producer:
       acks: all
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
-      topic: topico-eventos
+      topic:
+        notification: topico-eventos
+        rule-processing: topico-validacao-regras
+        risk-analysis-processing: topico-analise-risco
 
 server.port: 8080
 

@@ -9,7 +9,7 @@ CREATE TABLE tb_policies (
     payment_method VARCHAR(50) NOT NULL,
     insured_amount BIGINT NOT NULL,
     monthly_premium BIGINT NOT NULL,
-    max_processing_time TIMESTAMP,
+    processing_status VARCHAR(50) NOT NULL,
     payment_date TIMESTAMP,
     subscription_date TIMESTAMP,
     reason VARCHAR,
@@ -22,7 +22,7 @@ CREATE INDEX idx_tb_policies_client_id ON tb_policies(client_id);
 CREATE INDEX idx_tb_policies_status ON tb_policies(status);
 CREATE INDEX idx_tb_policies_created_at ON tb_policies(created_at);
 CREATE INDEX idx_tb_policies_status_created_at ON tb_policies(status, created_at);
-CREATE INDEX idx_tb_policies_processing ON tb_policies(status, created_at, max_processing_time);
+CREATE INDEX idx_tb_policies_processing_status ON tb_policies(processing_status);
 
 -- Criação da tabela de assistencias
 CREATE TABLE tb_assistances (

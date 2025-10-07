@@ -2,13 +2,12 @@ package io.insurance.policy.manager.application.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.insurance.policy.manager.application.controller.dto.enums.PaymentMethod;
-import io.insurance.policy.manager.application.controller.dto.enums.SalesChannel;
+import io.insurance.policy.manager.boundaries.driving.http.dto.enums.PaymentMethod;
+import io.insurance.policy.manager.boundaries.driving.http.dto.enums.SalesChannel;
 import io.insurance.policy.manager.domain.model.Policy;
 import io.insurance.policy.manager.domain.model.StatusHistory;
 import io.insurance.policy.manager.domain.model.enums.Status;
 import io.insurance.policy.manager.domain.repository.OutboxEventRepository;
-import io.insurance.policy.manager.domain.repository.PolicyRepository;
 import io.insurance.policy.manager.domain.repository.StatusHistoryRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

@@ -1,8 +1,8 @@
 package io.insurance.policy.manager.application.service;
 
-import io.insurance.policy.manager.application.controller.dto.enums.Category;
-import io.insurance.policy.manager.boundaries.driving.http.client.FraudPreventionClient;
-import io.insurance.policy.manager.boundaries.driving.http.dto.RiskAnalysisResponse;
+import io.insurance.policy.manager.boundaries.driving.http.dto.enums.Category;
+import io.insurance.policy.manager.boundaries.driven.http.client.FraudPreventionClient;
+import io.insurance.policy.manager.boundaries.driven.http.dto.RiskAnalysisResponse;
 import io.insurance.policy.manager.domain.model.Assistances;
 import io.insurance.policy.manager.domain.model.Coverage;
 import io.insurance.policy.manager.domain.model.Policy;

@@ -38,7 +38,7 @@ class EventSubmissionServiceTests {
     @BeforeEach
     void setUp() {
         Duration expired = Duration.ofMinutes(1);
-        service = new EventSubmissionService(expired, outboxEventRepository, kafkaProducer, metricsCollector);
+        service = new EventSubmissionService(expired, "", outboxEventRepository, kafkaProducer, metricsCollector);
 
         event = new OutboxEvent();
         event.setId(123L);
@@ -81,7 +81,7 @@ class EventSubmissionServiceTests {
         // Aguarda a execução assíncrona
         Thread.sleep(500);
 
-        verify(kafkaProducer).send(anyString(), eq(event.getEventJson()));
+        verify(kafkaProducer).send(anyString(), eq(event.getEventJson()), anyString());
         verify(metricsCollector).incrementKafkaEventProduced();
         verify(outboxEventRepository).delete(event);
     }
@@ -95,7 +95,7 @@ class EventSubmissionServiceTests {
         Thread.sleep(500);
 
         verify(outboxEventRepository).delete(event);
-        verify(kafkaProducer, never()).send(any(), any());
+        verify(kafkaProducer, never()).send(any(), any(), any());
         verify(metricsCollector, never()).incrementKafkaEventProduced();
     }
 

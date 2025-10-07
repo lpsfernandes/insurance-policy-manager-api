@@ -1,4 +1,4 @@
-package io.insurance.policy.manager.application.controller.dto.enums;
+package io.insurance.policy.manager.boundaries.driving.http.dto.enums;
 
 public enum PaymentMethod {
     CREDIT_CARD,     // CARTÃO DE CRÉDITO

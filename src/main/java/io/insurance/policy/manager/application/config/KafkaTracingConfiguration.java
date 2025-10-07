@@ -1,5 +1,6 @@
 package io.insurance.policy.manager.application.config;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -17,7 +18,7 @@ import org.springframework.util.backoff.FixedBackOff;
 public class KafkaTracingConfiguration {
 
     @Value("${spring.kafka.consumer.retry.interval:100}")
-    private long interval;
+    private Long interval;
     @Value("${spring.kafka.consumer.retry.maxAttempts:3}")
     private Integer maxAttempts;
 
@@ -28,7 +29,7 @@ public class KafkaTracingConfiguration {
         factory.getContainerProperties().setObservationEnabled(true);
         factory.setConsumerFactory(consumerFactory);
         var errorHandler = errorHandler();
-        errorHandler.addNotRetryableExceptions(IllegalArgumentException.class);
+        errorHandler.addNotRetryableExceptions(JsonProcessingException.class);
         return factory;
     }
 
@@ -39,9 +40,8 @@ public class KafkaTracingConfiguration {
         return kafkaTemplate;
     }
 
-    @Bean
     public DefaultErrorHandler errorHandler() {
-        BackOff fixedBackOff = new FixedBackOff(interval, maxAttempts);
+        BackOff fixedBackOff = new FixedBackOff(this.interval, this.maxAttempts);
         return new DefaultErrorHandler((consumerRecord, exception) -> {
             log.error("Erro {} ao consumir mensagem kafka do topico {}, payload: {}", exception.getMessage(), consumerRecord.topic(), consumerRecord.value());
         }, fixedBackOff);

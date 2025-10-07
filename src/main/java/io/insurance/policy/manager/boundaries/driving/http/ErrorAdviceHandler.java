@@ -1,4 +1,4 @@
-package io.insurance.policy.manager.application.controller;
+package io.insurance.policy.manager.boundaries.driving.http;
 
 import io.insurance.policy.manager.domain.exception.CreatePolicyException;
 import io.insurance.policy.manager.domain.exception.PolicyNotFound;

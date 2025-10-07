@@ -1,11 +1,11 @@
 package io.insurance.policy.manager.application.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.insurance.policy.manager.application.controller.dto.PolicyRequest;
-import io.insurance.policy.manager.application.controller.dto.UpdatePoliceRequest;
-import io.insurance.policy.manager.application.controller.dto.enums.Category;
-import io.insurance.policy.manager.application.controller.dto.enums.PaymentMethod;
-import io.insurance.policy.manager.application.controller.dto.enums.SalesChannel;
+import io.insurance.policy.manager.boundaries.driving.http.dto.PolicyRequest;
+import io.insurance.policy.manager.boundaries.driving.http.dto.UpdatePoliceRequest;
+import io.insurance.policy.manager.boundaries.driving.http.dto.enums.Category;
+import io.insurance.policy.manager.boundaries.driving.http.dto.enums.PaymentMethod;
+import io.insurance.policy.manager.boundaries.driving.http.dto.enums.SalesChannel;
 import io.insurance.policy.manager.application.service.interfaces.ICreatePolicyService;
 import io.insurance.policy.manager.application.service.interfaces.IPolicyStatusHandler;
 import io.insurance.policy.manager.application.service.interfaces.ISearchPolicyService;
