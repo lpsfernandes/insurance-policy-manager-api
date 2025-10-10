@@ -3,7 +3,7 @@ package io.insurance.policy.manager.boundaries.driving.consumer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.insurance.policy.manager.application.service.BusinessMetricsCollector;
-import io.insurance.policy.manager.application.service.interfaces.IProcessApolicyService;
+import io.insurance.policy.manager.application.service.interfaces.IProcessPolicyPayment;
 import io.insurance.policy.manager.boundaries.driving.consumer.dto.PaymentEvent;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 public class PaymentsConsumer {
 
     private final ObjectMapper objectMapper;
-    private final IProcessApolicyService processApolicyService;
+    private final IProcessPolicyPayment processPolicyPayment;
     private final BusinessMetricsCollector metricsCollector;
 
     @KafkaListener(topics = "${spring.kafka.consumer.topics.payments}",
@@ -28,7 +28,7 @@ public class PaymentsConsumer {
         try {
             if (!message.isEmpty()) {
                 var event = this.objectMapper.readValue(message, PaymentEvent.class);
-                this.processApolicyService.process(event);
+                this.processPolicyPayment.process(event);
                 metricsCollector.incrementKafkaPaymentEventConsumed();
             }
         } catch (JsonProcessingException e){

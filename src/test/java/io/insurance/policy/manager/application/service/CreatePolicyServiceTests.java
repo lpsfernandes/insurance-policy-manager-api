@@ -1,14 +1,14 @@
 package io.insurance.policy.manager.application.service;
-import io.insurance.policy.manager.application.controller.dto.PolicyRequest;
-import io.insurance.policy.manager.application.controller.dto.enums.Category;
-import io.insurance.policy.manager.application.controller.dto.enums.PaymentMethod;
+import io.insurance.policy.manager.boundaries.driving.http.dto.PolicyRequest;
+import io.insurance.policy.manager.boundaries.driving.http.dto.enums.Category;
+import io.insurance.policy.manager.boundaries.driving.http.dto.enums.PaymentMethod;
 import io.insurance.policy.manager.domain.model.Policy;
 import io.insurance.policy.manager.domain.model.enums.Status;
 import io.insurance.policy.manager.domain.repository.AssistancesRepository;
 import io.insurance.policy.manager.domain.repository.CoverageRepository;
 import io.insurance.policy.manager.domain.repository.PolicyRepository;
 import io.insurance.policy.manager.domain.repository.StatusHistoryRepository;
-import io.insurance.policy.manager.application.controller.dto.enums.SalesChannel;
+import io.insurance.policy.manager.boundaries.driving.http.dto.enums.SalesChannel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -84,6 +84,7 @@ class CreatePolicyServiceTests {
                 .insuredAmount(100000L)
                 .monthlyPremium(10000L)
                 .status(Status.RECEIVED)
+                .processingStatus(ProcessingStatus.AWAITING_RISK_ANALYSIS)
                 .createdAt(ZonedDateTime.now(ZoneId.of("UTC")))
                 .build();
     }
@@ -97,6 +98,7 @@ class CreatePolicyServiceTests {
 
         assertTrue(result.isPresent());
         assertEquals(savedPolicy.getId(), result.get().getId());
+        assertEquals(ProcessingStatus.AWAITING_RISK_ANALYSIS, savedPolicy.getProcessingStatus());
 
         verify(serviceSpy).insertPolicy(any(), eq(request));
         verify(policyRepository, times(1)).save(any());
@@ -111,9 +113,9 @@ class CreatePolicyServiceTests {
     void testCreatePolicyFailure() {
         doThrow(new RuntimeException("Erro simulado")).when(serviceSpy).insertPolicy(any(), any());
 
-        Optional<Policy> result = serviceSpy.createPolicy(request);
+        assertThrows(RuntimeException.class,
+                () -> serviceSpy.createPolicy(request));
 
-        assertTrue(result.isEmpty());
         verify(serviceSpy).insertPolicy(any(), any());
         verify(metricsCollector, never()).incrementPoliciesCreated();
     }

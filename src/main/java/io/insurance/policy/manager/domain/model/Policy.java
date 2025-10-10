@@ -1,6 +1,6 @@
 package io.insurance.policy.manager.domain.model;
 
-import io.insurance.policy.manager.domain.exception.StatusNotAllowed;
+import io.insurance.policy.manager.application.service.ProcessingStatus;
 import io.insurance.policy.manager.domain.model.enums.RiskClassification;
 import io.insurance.policy.manager.domain.model.enums.Status;
 import jakarta.persistence.*;
@@ -61,11 +61,12 @@ public class Policy {
     @Column(name = "subscription_date")
     ZonedDateTime subscriptionDate;
 
-    @Column(name = "max_processing_time")
-    ZonedDateTime maxProcessingTime;
-
     @Column
     String reason;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "processing_status", nullable = false)
+    ProcessingStatus processingStatus;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -79,11 +80,5 @@ public class Policy {
 
     @OneToMany(mappedBy = "policyId", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     Set<Assistances> assistances;
-
-    public void setStatus(Status newStatus){
-        if (this.status != null && !this.status.canTransitionTo(newStatus))
-            throw new StatusNotAllowed(this.status, newStatus);
-        this.status = newStatus;
-    }
 
 }

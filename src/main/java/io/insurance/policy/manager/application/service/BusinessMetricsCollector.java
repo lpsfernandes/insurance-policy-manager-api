@@ -27,6 +27,10 @@ public class BusinessMetricsCollector {
     private Counter kafkaEventsSubscriptionApproved;
     private Timer policyProcessingTimer;
 
+    // processamento interno
+    private Counter kafkaEventsRiskAnalysConsumed;
+    private Counter kafkaEventsRulesValidationConsumed;
+
     @PostConstruct
     public void initMetrics() {
         policiesCreated = meterRegistry.counter("business.policies.created");
@@ -40,6 +44,10 @@ public class BusinessMetricsCollector {
         kafkaEventsSubscriptionApproved = meterRegistry.counter("business.kafka.subscription.approved");
         kafkaEventsSubscriptionRejected = meterRegistry.counter("business.kafka.subscription.rejected");
         policyProcessingTimer = meterRegistry.timer("business.policy.processing.duration");
+
+        // processamento interno
+        kafkaEventsRiskAnalysConsumed = meterRegistry.counter("business.kafka.events.risk.analys.consumed");
+        kafkaEventsRulesValidationConsumed = meterRegistry.counter("business.kafka.events.rules.validation.consumed");
     }
 
     public void incrementPoliciesCreated() {
@@ -88,5 +96,14 @@ public class BusinessMetricsCollector {
 
     public void recordPolicyProcessingTime(Runnable processingLogic) {
         policyProcessingTimer.record(processingLogic);
+    }
+
+    // processamento interno
+    public void incrementKafkaEventsRiskAnalysConsumed() {
+        kafkaEventsRiskAnalysConsumed.increment();
+    }
+
+    public void incrementKafkaEventsRulesValidationConsumed() {
+        kafkaEventsRulesValidationConsumed.increment();
     }
 }

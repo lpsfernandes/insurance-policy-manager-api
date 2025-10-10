@@ -1,9 +1,9 @@
-package io.insurance.policy.manager.application.controller;
+package io.insurance.policy.manager.boundaries.driving.http;
 
-import io.insurance.policy.manager.application.controller.dto.PolicyCreatedResponse;
-import io.insurance.policy.manager.application.controller.dto.PolicyRequest;
-import io.insurance.policy.manager.application.controller.dto.PolicyResponse;
-import io.insurance.policy.manager.application.controller.dto.UpdatePoliceRequest;
+import io.insurance.policy.manager.boundaries.driving.http.dto.PolicyCreatedResponse;
+import io.insurance.policy.manager.boundaries.driving.http.dto.PolicyRequest;
+import io.insurance.policy.manager.boundaries.driving.http.dto.PolicyResponse;
+import io.insurance.policy.manager.boundaries.driving.http.dto.UpdatePoliceRequest;
 import io.insurance.policy.manager.application.service.interfaces.ICreatePolicyService;
 import io.insurance.policy.manager.application.service.interfaces.IPolicyStatusHandler;
 import io.insurance.policy.manager.application.service.interfaces.ISearchPolicyService;
@@ -52,7 +52,7 @@ public class PolicyController {
     public PolicyCreatedResponse createPolicy(@RequestBody PolicyRequest request) {
         return this.createPolicyService.createPolicy(request)
                     .map(PolicyCreatedResponse::new)
-                    .orElseThrow(CreatePolicyException::new);
+                    .orElseThrow(RuntimeException::new);
     }
 
 

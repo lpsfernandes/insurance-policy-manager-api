@@ -1,8 +1,8 @@
-package io.insurance.policy.manager.application.controller.dto;
+package io.insurance.policy.manager.boundaries.driving.http.dto;
 
-import io.insurance.policy.manager.application.controller.dto.enums.Category;
-import io.insurance.policy.manager.application.controller.dto.enums.PaymentMethod;
-import io.insurance.policy.manager.application.controller.dto.enums.SalesChannel;
+import io.insurance.policy.manager.boundaries.driving.http.dto.enums.Category;
+import io.insurance.policy.manager.boundaries.driving.http.dto.enums.PaymentMethod;
+import io.insurance.policy.manager.boundaries.driving.http.dto.enums.SalesChannel;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 

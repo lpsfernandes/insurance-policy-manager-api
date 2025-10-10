@@ -3,104 +3,97 @@ package io.insurance.policy.manager.boundaries.driving.consumer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.insurance.policy.manager.application.service.BusinessMetricsCollector;
-
-import io.insurance.policy.manager.application.service.interfaces.IProcessApolicyService;
+import io.insurance.policy.manager.application.service.interfaces.IProcessPolicyPayment;
 import io.insurance.policy.manager.boundaries.driving.consumer.dto.PaymentEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.*;
 
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
-public class PaymentsConsumerTests {
+class PaymentsConsumerTests {
 
     @Mock
     private ObjectMapper objectMapper;
 
     @Mock
-    private IProcessApolicyService processApolicyService;
+    private IProcessPolicyPayment processPolicyPayment;
 
     @Mock
     private BusinessMetricsCollector metricsCollector;
 
-    private PaymentsConsumer consumer;
+    @InjectMocks
+    private PaymentsConsumer paymentsConsumer;
+
+    @Captor
+    private ArgumentCaptor<PaymentEvent> eventCaptor;
 
     @BeforeEach
     void setUp() {
-        consumer = new PaymentsConsumer(objectMapper, processApolicyService, metricsCollector);
+        MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    void testConsumeMessageWithValidPayload() throws Exception {
-        String message = "{\"paymentId\":\"123\"}";
-        PaymentEvent event = new PaymentEvent(
-                "payment-001",
-                "order-123",
-                ZonedDateTime.now(ZoneId.of("UTC")),
-                null,
-                PaymentEvent.Status.APPROVED
-        );
-
+    void shouldProcessValidMessage() throws Exception {
+        String message = "{\"orderId\":\"123\"}";
+        PaymentEvent event = getMockEvents();
 
         when(objectMapper.readValue(message, PaymentEvent.class)).thenReturn(event);
 
-        consumer.consumeMessage(message);
+        paymentsConsumer.consumeMessage(message);
 
         verify(objectMapper).readValue(message, PaymentEvent.class);
-        verify(processApolicyService).process(event);
+        verify(processPolicyPayment).process(eventCaptor.capture());
         verify(metricsCollector).incrementKafkaPaymentEventConsumed();
+
+        assertEquals(event, eventCaptor.getValue());
     }
 
     @Test
-    void testConsumeMessageWithEmptyPayload() {
-        consumer.consumeMessage("");
+    void shouldLogErrorOnJsonProcessingException() throws Exception {
+        String message = "{\"invalid\":true}";
 
-        verifyNoInteractions(objectMapper, processApolicyService, metricsCollector);
-    }
+        when(objectMapper.readValue(message, PaymentEvent.class)).thenThrow(new JsonProcessingException("Erro de parsing") {});
 
-    @Test
-    void testConsumeMessageWithInvalidJson() throws Exception {
-        String message = "invalid-json";
+        assertDoesNotThrow(() -> paymentsConsumer.consumeMessage(message));
 
-        when(objectMapper.readValue(message, PaymentEvent.class))
-                .thenThrow(new JsonProcessingException("Erro de parsing") {});
-
-        consumer.consumeMessage(message);
-
-        verify(objectMapper).readValue(message, PaymentEvent.class);
-        verifyNoInteractions(processApolicyService);
-        verifyNoInteractions(metricsCollector);
-    }
-
-    @Test
-    void testConsumeMessageWithUnexpectedException() throws Exception {
-        String message = "{\"paymentId\":\"123\"}";
-        PaymentEvent event = new PaymentEvent(
-                "payment-001",
-                "order-123",
-                ZonedDateTime.now(ZoneId.of("UTC")),
-                null,
-                PaymentEvent.Status.APPROVED
-        );
-
-
-        when(objectMapper.readValue(message, PaymentEvent.class)).thenReturn(event);
-        doThrow(new RuntimeException("Erro interno")).when(processApolicyService).process(event);
-
-        try {
-            consumer.consumeMessage(message);
-        } catch (RuntimeException e) {
-            // esperado
-        }
-
-        verify(objectMapper).readValue(message, PaymentEvent.class);
-        verify(processApolicyService).process(event);
+        verify(processPolicyPayment, never()).process(any());
         verify(metricsCollector, never()).incrementKafkaPaymentEventConsumed();
     }
+
+    @Test
+    void shouldThrowExceptionOnGenericError() throws Exception {
+        String message = "{\"orderId\":\"123\"}";
+        PaymentEvent event = getMockEvents();
+
+        when(objectMapper.readValue(message, PaymentEvent.class)).thenReturn(event);
+        doThrow(new RuntimeException("Erro inesperado")).when(processPolicyPayment).process(event);
+
+        RuntimeException thrown = assertThrows(RuntimeException.class, () -> paymentsConsumer.consumeMessage(message));
+        assertEquals("Erro inesperado", thrown.getMessage());
+
+        verify(metricsCollector, never()).incrementKafkaPaymentEventConsumed();
+    }
+
+    @Test
+    void shouldIgnoreEmptyMessage() {
+        paymentsConsumer.consumeMessage("");
+
+        verifyNoInteractions(objectMapper, processPolicyPayment, metricsCollector);
+    }
+
+    PaymentEvent getMockEvents(){
+        return new PaymentEvent(
+                "evt-001",
+                "order-123",
+                ZonedDateTime.parse("2025-10-09T22:00:00-03:00"),
+                "Pagamento aprovado",
+                PaymentEvent.Status.APPROVED
+        );
+
+    }
+
 }

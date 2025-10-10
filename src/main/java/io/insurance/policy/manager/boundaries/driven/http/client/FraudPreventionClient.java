@@ -1,7 +1,7 @@
-package io.insurance.policy.manager.boundaries.driving.http.client;
+package io.insurance.policy.manager.boundaries.driven.http.client;
 
-import io.insurance.policy.manager.boundaries.driving.http.dto.RiskAnalysisRequest;
-import io.insurance.policy.manager.boundaries.driving.http.dto.RiskAnalysisResponse;
+import io.insurance.policy.manager.boundaries.driven.http.dto.RiskAnalysisRequest;
+import io.insurance.policy.manager.boundaries.driven.http.dto.RiskAnalysisResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;

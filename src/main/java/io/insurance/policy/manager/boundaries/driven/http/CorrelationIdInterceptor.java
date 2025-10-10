@@ -1,4 +1,4 @@
-package io.insurance.policy.manager.boundaries.driving.http;
+package io.insurance.policy.manager.boundaries.driven.http;
 
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
