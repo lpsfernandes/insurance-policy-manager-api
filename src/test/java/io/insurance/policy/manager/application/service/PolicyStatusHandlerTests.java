@@ -114,4 +114,15 @@ class PolicyStatusHandlerTests {
         verify(serviceSpy).insertOutboxEvent(any(), any());
         verify(serviceSpy).insertStatusHistory(any(), any());
     }
+
+    @Test
+    void shouldThrowProcessingProcessingStatusNotAllowedException() {
+
+        policy.setStatus(Status.PENDING);
+        policy.setProcessingStatus(ProcessingStatus.AWAITING_RISK_ANALYSIS);
+
+        assertThrows(ProcessingStatusNotAllowed.class, () ->
+            serviceSpy.processingStatusHandler(policy, Status.REJECTED, ProcessingStatus.COMPLETED));
+
+    }
 }
