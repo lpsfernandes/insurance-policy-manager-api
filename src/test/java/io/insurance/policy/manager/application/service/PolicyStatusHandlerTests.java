@@ -6,18 +6,18 @@ import io.insurance.policy.manager.domain.model.enums.Status;
 import io.insurance.policy.manager.domain.repository.PolicyRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.MockitoAnnotations;
 
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
-public class PolicyStatusHandlerTests {
+class PolicyStatusHandlerTests {
 
     @Mock
     private PolicyRepository policyRepository;
@@ -25,87 +25,93 @@ public class PolicyStatusHandlerTests {
     @Mock
     private BusinessMetricsCollector metricsCollector;
 
-    private PolicyStatusHandler handlerSpy;
+    private PolicyStatusHandler serviceSpy;
+
+    private Policy policy;
 
     @BeforeEach
     void setUp() {
-        var handler = new PolicyStatusHandler(policyRepository, metricsCollector);
-        handlerSpy =  Mockito.spy(handler);
+        MockitoAnnotations.openMocks(this);
+        var service = new PolicyStatusHandler(policyRepository, metricsCollector);
+        serviceSpy = Mockito.spy(service);
+        policy = new Policy();
+        policy.setId("POL123");
+        policy.setStatus(Status.PENDING);
+        policy.setInsuredAmount(1L);
+        policy.setMonthlyPremium(1L);
+        policy.setProcessingStatus(ProcessingStatus.AWAITING_PAYMENT_AND_SUBSCRIPTION);
+        policy.setHistory(Set.of());
     }
 
     @Test
-    void testStatusHandlerWithApprovedStatus() {
-        doNothing().when(handlerSpy).insertOutboxEvent(any(), any());
-        doNothing().when(handlerSpy).insertStatusHistory(any(), any());
+    void shouldUpdateStatusSuccessfully() {
+        doNothing().when(serviceSpy).insertOutboxEvent(any(), any());
+        doNothing().when(serviceSpy).insertStatusHistory(any(), any());
 
-        Policy policy = new Policy();
-        policy.setId("policy-001");
-        policy.setStatus(Status.PENDING);
+        when(policyRepository.findById("POL123")).thenReturn(Optional.of(policy));
 
-        when(policyRepository.findById("policy-001")).thenReturn(Optional.of(policy));
-        when(policyRepository.save(any())).thenReturn(policy);
-
-        Optional<Policy> result = handlerSpy.statusHandler("policy-001", Status.APPROVED);
+        Optional<Policy> result = serviceSpy.statusHandler("POL123", Status.APPROVED);
 
         assertTrue(result.isPresent());
-        assertEquals(Status.APPROVED, result.get().getStatus());
-
+        assertEquals(Status.APPROVED, policy.getStatus());
+        verify(policyRepository, times(2)).findById("POL123");
         verify(policyRepository).save(policy);
         verify(metricsCollector).incrementPoliciesApproved();
-        verify(metricsCollector, never()).incrementPoliciesRejected();
-        verify(handlerSpy).insertOutboxEvent(any(), any());
-        verify(handlerSpy).insertStatusHistory(any(), any());
+        verify(serviceSpy).insertOutboxEvent(any(), any());
+        verify(serviceSpy).insertStatusHistory(any(), any());
     }
 
     @Test
-    void testStatusHandlerWithRejectedStatus() {
-        doNothing().when(handlerSpy).insertOutboxEvent(any(), any());
-        doNothing().when(handlerSpy).insertStatusHistory(any(), any());
+    void shouldNotUpdateStatusIfSame() {
+        policy.setStatus(Status.APPROVED);
+        when(policyRepository.findById("POL123")).thenReturn(Optional.of(policy));
 
-        Policy policy = new Policy();
-        policy.setId("policy-002");
-        policy.setStatus(Status.VALIDATED);
-
-        when(policyRepository.findById("policy-002")).thenReturn(Optional.of(policy));
-        when(policyRepository.save(any())).thenReturn(policy);
-
-        Optional<Policy> result = handlerSpy.statusHandler("policy-002", Status.REJECTED);
+        Optional<Policy> result = serviceSpy.statusHandler("POL123", Status.APPROVED);
 
         assertTrue(result.isPresent());
-        assertEquals(Status.REJECTED, result.get().getStatus());
+        verify(policyRepository, never()).save(any());
+        verify(metricsCollector, never()).incrementPoliciesApproved();
+    }
 
+    @Test
+    void shouldThrowStatusNotAllowedException() {
+        policy.setStatus(Status.REJECTED);
+        when(policyRepository.findById("POL123")).thenReturn(Optional.of(policy));
+
+        assertThrows(StatusNotAllowed.class, () -> serviceSpy.statusHandler("POL123", Status.APPROVED));
+    }
+
+    @Test
+    void shouldUpdateProcessingStatusSuccessfully() {
+        serviceSpy.processingStatusHandler(policy, ProcessingStatus.COMPLETED);
+
+        assertEquals(ProcessingStatus.COMPLETED, policy.getProcessingStatus());
+        verify(policyRepository).save(policy);
+    }
+
+    @Test
+    void shouldThrowProcessingStatusNotAllowedException() {
+        policy.setProcessingStatus(ProcessingStatus.COMPLETED);
+
+        assertThrows(ProcessingStatusNotAllowed.class, () ->
+                serviceSpy.processingStatusHandler(policy, ProcessingStatus.AWAITING_PAYMENT_AND_SUBSCRIPTION));
+    }
+
+    @Test
+    void shouldUpdateBothStatusAndProcessingStatus() {
+        doNothing().when(serviceSpy).insertOutboxEvent(any(), any());
+        doNothing().when(serviceSpy).insertStatusHistory(any(), any());
+
+        policy.setStatus(Status.PENDING);
+        policy.setProcessingStatus(ProcessingStatus.AWAITING_PAYMENT_AND_SUBSCRIPTION);
+
+        serviceSpy.processingStatusHandler(policy, Status.REJECTED, ProcessingStatus.COMPLETED);
+
+        assertEquals(Status.REJECTED, policy.getStatus());
+        assertEquals(ProcessingStatus.COMPLETED, policy.getProcessingStatus());
         verify(policyRepository).save(policy);
         verify(metricsCollector).incrementPoliciesRejected();
-        verify(metricsCollector, never()).incrementPoliciesApproved();
-        verify(handlerSpy).insertOutboxEvent(any(), any());
-        verify(handlerSpy).insertStatusHistory(any(), any());
-    }
-
-    @Test
-    void testStatusHandlerWithPolicyNotFound() {
-        when(policyRepository.findById("policy-404")).thenReturn(Optional.empty());
-
-        Optional<Policy> result = handlerSpy.statusHandler("policy-404", Status.APPROVED);
-
-        assertTrue(result.isEmpty());
-
-        verify(policyRepository, never()).save(any());
-        verifyNoInteractions(metricsCollector);
-    }
-
-    @Test
-    void testStatusHandlerThrowsExceptionOnSave() {
-        Policy policy = new Policy();
-        policy.setId("policy-003");
-        policy.setStatus(Status.RECEIVED);
-
-        when(policyRepository.findById("policy-003")).thenReturn(Optional.of(policy));
-
-        assertThrows(StatusNotAllowed.class, () ->
-                handlerSpy.statusHandler("policy-003", Status.APPROVED));
-
-        verify(policyRepository).findById("policy-003");
-        verifyNoInteractions(metricsCollector);
+        verify(serviceSpy).insertOutboxEvent(any(), any());
+        verify(serviceSpy).insertStatusHistory(any(), any());
     }
 }
-

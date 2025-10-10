@@ -4,47 +4,41 @@ package io.insurance.policy.manager.boundaries.driven.producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.*;
 import org.springframework.kafka.core.KafkaTemplate;
 
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
 
-
-@ExtendWith(MockitoExtension.class)
-class KafkaProducerTest {
+class KafkaProducerTests {
 
     @Mock
     private KafkaTemplate<String, String> kafkaTemplate;
 
+    @InjectMocks
     private KafkaProducer kafkaProducer;
 
-    private final String topicName = "test-topic";
+    @Captor
+    private ArgumentCaptor<ProducerRecord<String, String>> recordCaptor;
 
     @BeforeEach
     void setUp() {
-        kafkaProducer = new KafkaProducer(topicName, kafkaTemplate);
+        MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    void testSendShouldPublishToKafkaTemplate() {
-        String header = "trace-header";
-        String message = "{\"data\":\"test\"}";
+    void shouldSendMessageToKafkaTopic() {
+        String header = "event-header";
+        String message = "{\"id\":\"123\",\"status\":\"APPROVED\"}";
+        String topic = "payments-topic";
 
-        kafkaProducer.send(header, message);
+        kafkaProducer.send(header, message, topic);
 
-        ArgumentCaptor<ProducerRecord<String, String>> captor = ArgumentCaptor.forClass(ProducerRecord.class);
-        verify(kafkaTemplate, times(1)).send(captor.capture());
+        verify(kafkaTemplate).send(recordCaptor.capture());
 
-        ProducerRecord<String, String> record = captor.getValue();
-        assertEquals(topicName, record.topic());
+        ProducerRecord<String, String> record = recordCaptor.getValue();
+        assertEquals(topic, record.topic());
         assertEquals(header, record.key());
         assertEquals(message, record.value());
     }
-
 }

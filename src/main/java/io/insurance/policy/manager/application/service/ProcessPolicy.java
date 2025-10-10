@@ -16,9 +16,9 @@ public abstract class ProcessPolicy {
     private final IPolicyStatusHandler policyStatusHandler;
     private final BusinessMetricsCollector metricsCollector;
 
-    void collectMetrics(Policy policy) {
-        this.metricsCollector.recordPolicyProcessingTime(() -> Duration.between(policy.getCreatedAt(), policy.getFinishedAt()));
-        if (policy.getStatus() == Status.APPROVED) {
+    void collectMetrics(Status newStatus, ZonedDateTime createdAt, ZonedDateTime finishedAt) {
+        this.metricsCollector.recordPolicyProcessingTime(() -> Duration.between(createdAt, finishedAt));
+        if (newStatus == Status.APPROVED) {
             this.metricsCollector.incrementPoliciesApproved();
         } else {
             this.metricsCollector.incrementPoliciesRejected();
@@ -29,7 +29,7 @@ public abstract class ProcessPolicy {
     void saveDataDb(Policy policy, Status status, ProcessingStatus processingStatus) {
         if ( status == Status.APPROVED || status == Status.REJECTED) {
             policy.setFinishedAt(ZonedDateTime.now(ZoneId.of("UTC")));
-            this.collectMetrics(policy);
+            this.collectMetrics(status, policy.getCreatedAt(), policy.getFinishedAt());
         }
 
         if ( policy.getStatus() != status) {

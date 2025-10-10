@@ -1,4 +1,4 @@
-package io.insurance.policy.manager.application.controller;
+package io.insurance.policy.manager.boundaries.driving.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.insurance.policy.manager.boundaries.driving.http.dto.PolicyRequest;

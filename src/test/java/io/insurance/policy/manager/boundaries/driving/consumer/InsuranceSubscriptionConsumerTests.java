@@ -3,105 +3,97 @@ package io.insurance.policy.manager.boundaries.driving.consumer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.insurance.policy.manager.application.service.BusinessMetricsCollector;
-
-import io.insurance.policy.manager.application.service.interfaces.IProcessApolicyService;
+import io.insurance.policy.manager.application.service.interfaces.IProcessInsuranceSubscriptionPayment;
 import io.insurance.policy.manager.boundaries.driving.consumer.dto.InsuranceSubscriptionEvent;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.*;
 
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
-public class InsuranceSubscriptionConsumerTests {
+class InsuranceSubscriptionConsumerTests {
 
     @Mock
     private ObjectMapper objectMapper;
 
     @Mock
-    private IProcessApolicyService processApolicyService;
+    private IProcessInsuranceSubscriptionPayment processApolicyService;
 
     @Mock
     private BusinessMetricsCollector metricsCollector;
 
+    @InjectMocks
     private InsuranceSubscriptionConsumer consumer;
+
+    @Captor
+    private ArgumentCaptor<InsuranceSubscriptionEvent> eventCaptor;
 
     @BeforeEach
     void setUp() {
-        consumer = new InsuranceSubscriptionConsumer(objectMapper, processApolicyService, metricsCollector);
+        MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    void testConsumeMessageWithValidPayload() throws Exception {
-        String message = "{\"policyId\":\"123\"}";
-        InsuranceSubscriptionEvent event = new InsuranceSubscriptionEvent(
-                "event-001",
-                "order-123",
-                ZonedDateTime.now(ZoneId.of("UTC")),
-                null,
-                InsuranceSubscriptionEvent.Status.APPROVED
-        );
+    void shouldProcessValidMessage() throws Exception {
+        InsuranceSubscriptionEvent event = getMockEvents();
+        String message = "{\"orderId\":\"123\"}";
 
         when(objectMapper.readValue(message, InsuranceSubscriptionEvent.class)).thenReturn(event);
 
         consumer.consumeMessage(message);
 
         verify(objectMapper).readValue(message, InsuranceSubscriptionEvent.class);
-        verify(processApolicyService).process(event);
+        verify(processApolicyService).process(eventCaptor.capture());
         verify(metricsCollector).incrementKafkaSubscriptionEventConsumed();
+
+        assertEquals(event, eventCaptor.getValue());
     }
 
     @Test
-    void testConsumeMessageWithEmptyPayload() {
+    void shouldLogErrorOnJsonProcessingException() throws Exception {
+        String message = "{\"invalid\":true}";
+
+        when(objectMapper.readValue(message, InsuranceSubscriptionEvent.class))
+                .thenThrow(new JsonProcessingException("Erro de parsing") {});
+
+        assertDoesNotThrow(() -> consumer.consumeMessage(message));
+
+        verify(processApolicyService, never()).process(any());
+        verify(metricsCollector, never()).incrementKafkaSubscriptionEventConsumed();
+    }
+
+    @Test
+    void shouldThrowExceptionOnGenericError() throws Exception {
+        InsuranceSubscriptionEvent event = getMockEvents();
+        String message = "{\"orderId\":\"123\"}";
+
+        when(objectMapper.readValue(message, InsuranceSubscriptionEvent.class)).thenReturn(event);
+        doThrow(new RuntimeException("Erro inesperado")).when(processApolicyService).process(event);
+
+        RuntimeException thrown = assertThrows(RuntimeException.class, () -> consumer.consumeMessage(message));
+        assertEquals("Erro inesperado", thrown.getMessage());
+
+        verify(metricsCollector, never()).incrementKafkaSubscriptionEventConsumed();
+    }
+
+    @Test
+    void shouldIgnoreEmptyMessage() {
         consumer.consumeMessage("");
 
         verifyNoInteractions(objectMapper, processApolicyService, metricsCollector);
     }
 
-    @Test
-    void testConsumeMessageWithInvalidJson() throws Exception {
-        String message = "invalid-json";
-
-        when(objectMapper.readValue(message, InsuranceSubscriptionEvent.class))
-                .thenThrow(new JsonProcessingException("Erro de parsing") {});
-
-        consumer.consumeMessage(message);
-
-        verify(objectMapper).readValue(message, InsuranceSubscriptionEvent.class);
-        verifyNoInteractions(processApolicyService);
-        verifyNoInteractions(metricsCollector);
-    }
-
-    @Test
-    void testConsumeMessageWithUnexpectedException() throws Exception {
-        String message = "{\"policyId\":\"123\"}";
-
-        InsuranceSubscriptionEvent event = new InsuranceSubscriptionEvent(
-                "event-001",
+    InsuranceSubscriptionEvent getMockEvents(){
+        return new InsuranceSubscriptionEvent(
+                "evt-001",
                 "order-123",
-                ZonedDateTime.now(ZoneId.of("UTC")),
-                null,
+                ZonedDateTime.parse("2025-10-09T22:00:00-03:00"),
+                "Subscrição aprovado",
                 InsuranceSubscriptionEvent.Status.APPROVED
         );
 
-
-        when(objectMapper.readValue(message, InsuranceSubscriptionEvent.class)).thenReturn(event);
-        doThrow(new RuntimeException("Erro interno")).when(processApolicyService).process(event);
-
-        try {
-            consumer.consumeMessage(message);
-        } catch (RuntimeException e) {
-            // esperado
-        }
-
-        verify(objectMapper).readValue(message, InsuranceSubscriptionEvent.class);
-        verify(processApolicyService).process(event);
-        verify(metricsCollector, never()).incrementKafkaSubscriptionEventConsumed();
     }
 }

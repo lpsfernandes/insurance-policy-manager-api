@@ -84,6 +84,7 @@ class CreatePolicyServiceTests {
                 .insuredAmount(100000L)
                 .monthlyPremium(10000L)
                 .status(Status.RECEIVED)
+                .processingStatus(ProcessingStatus.AWAITING_RISK_ANALYSIS)
                 .createdAt(ZonedDateTime.now(ZoneId.of("UTC")))
                 .build();
     }
@@ -112,9 +113,9 @@ class CreatePolicyServiceTests {
     void testCreatePolicyFailure() {
         doThrow(new RuntimeException("Erro simulado")).when(serviceSpy).insertPolicy(any(), any());
 
-        Optional<Policy> result = serviceSpy.createPolicy(request);
+        assertThrows(RuntimeException.class,
+                () -> serviceSpy.createPolicy(request));
 
-        assertTrue(result.isEmpty());
         verify(serviceSpy).insertPolicy(any(), any());
         verify(metricsCollector, never()).incrementPoliciesCreated();
     }
