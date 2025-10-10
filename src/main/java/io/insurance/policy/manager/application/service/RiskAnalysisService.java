@@ -33,7 +33,7 @@ public class RiskAnalysisService implements IRiskAnalysisService {
     private final BusinessMetricsCollector metricsCollector;
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
+    @Transactional
     public void analyzeRisk(String traceId, @NonNull String policyId) {
         log.debug("Enviado apolice {} para analise de risco, requisicao: {}", policyId, traceId);
 

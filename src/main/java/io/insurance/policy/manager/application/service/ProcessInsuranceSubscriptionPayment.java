@@ -26,7 +26,7 @@ public class ProcessInsuranceSubscriptionPayment extends ProcessPolicy implement
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
+    @Transactional
     public void process(InsuranceSubscriptionEvent event) {
         this.searchPolicyService.getPolicyById(event.orderId())
                 .ifPresentOrElse( p -> {

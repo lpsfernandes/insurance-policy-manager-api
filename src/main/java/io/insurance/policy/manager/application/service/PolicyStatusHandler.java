@@ -72,7 +72,7 @@ public class PolicyStatusHandler extends HandleStatus implements IPolicyStatusHa
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
+    @Transactional
     public void processingStatusHandler(Policy p, Status status, ProcessingStatus processingStatus) {
 
         if (p.getProcessingStatus() != null

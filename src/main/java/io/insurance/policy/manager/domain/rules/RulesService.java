@@ -29,7 +29,7 @@ public class RulesService implements IRulesService {
     private final BusinessMetricsCollector metricsCollector;
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
+    @Transactional
     public void applyRules(String traceId, String policyId) {
 
         var policy = this.searchPolicyService.getPolicyById(policyId)

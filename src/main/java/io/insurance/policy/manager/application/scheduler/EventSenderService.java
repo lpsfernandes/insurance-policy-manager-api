@@ -17,7 +17,7 @@ public class EventSenderService {
     private final IPolicyStatusHandler policyStatusHandler;
     private final KafkaProducer kafkaProducer;
 
-    @Transactional(rollbackFor = Exception.class)
+    @Transactional
     public void sendEvent(Policy p, ProcessingStatus statusForUpdate, String topic) {
 
         var header = "{\"traceparent\":\"" + MDC.get("traceId") + "\"}";
